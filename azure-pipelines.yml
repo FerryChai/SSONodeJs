@@ -1,0 +1,48 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- master
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '16.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npm run build
+  displayName: 'npm install and build'
+
+- script: dir
+  workingDirectory: $(Agent.BuildDirectory)
+  displayName: List contents of a folder agent
+
+- script: dir
+  workingDirectory: $(Build.SourcesDirectory)
+  displayName: List contents of a folder build source
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '**' 
+    targetFolder: $(Build.ArtifactStagingDirectory)
+  displayName: 'Copy File'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifactName: nodeapp
+  displayName: 'Publish nodeapp artifact'
+
+# - task: Npm@1
+#   inputs:
+#     command: 'publish'
+#     publishRegistry: 'useFeed'
+#     publishFeed: '63e8f143-0bb7-44ae-8fe3-a79335716658/cd816497-a704-4eb6-baf8-2138ba96d529'
